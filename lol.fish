@@ -83,12 +83,6 @@ end
 
 function fish_prompt
 
-    # last command had an error? display the return value
-    set -l exit_status $status
-    if test $exit_status -ne 0
-        set error '(' $exit_status ')'
-    end
-
     # abbreviated home directory ~
     if command -s sed > /dev/null ^&1
         set current_dir (echo $PWD | sed -e "s,.*$HOME,~," ^/dev/null)
@@ -115,49 +109,9 @@ function fish_prompt
         case 'root'
             set prompt '#'
         case '*'
-            set prompt '>>'
+            set prompt '$'
     end
 
     # finally print the prompt
-    lolfish $USER '@' (hostname -s) ':' $current_dir $git_dir $error $prompt ' '
-end
-
-# Right side prompt
-#
-# Displays the number of background processes [&:2]
-# Displays the number of active tmux sessions [tmux:4]
-# Displays the time and date in Minute:Hour Day:Month:Year
-
-function fish_right_prompt
-
-    #
-    # background jobs
-    #
-    set -l background_jobs (count (jobs -p ^/dev/null))
-    if test $background_jobs -gt 0
-        set background_jobs_prompt '[' '&' ':' $background_jobs ']'
-    end
-
-    #
-    # Display the number of background tmux sessions
-    # only if the shell is running outside of tmux
-    #
-    if test -z $TMUX
-        if command -s tmux > /dev/null ^&1
-            set -l tmux_sessions (count (tmux list-sessions ^/dev/null))
-            if test $tmux_sessions -gt 0
-                set tmux_sessions_prompt '[' 'tmux' ':' $tmux_sessions ']'
-            end
-        end
-    end
-
-    #
-    # Display the time and date
-    #
-    if command -s date > /dev/null ^&1
-        set time (date +'%H:%M' ^/dev/null)
-        set date (date +'%d-%m-%Y' ^/dev/null)
-    end
-
-    lolfish $background_jobs_prompt $tmux_sessions_prompt $time ' ' $date
+    lolfish $USER '@' (hostname -s) ' ' $current_dir $git_dir ' ' $prompt ' '
 end
